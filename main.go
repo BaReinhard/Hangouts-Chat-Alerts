@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 
 	"google.golang.org/api/chat/v1"
 
@@ -66,7 +67,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Infof(ctx, "Error :%v", err)
 	}
-	text := "Build " + string(msg.Payload.BuildNumber) + " on Repository: " + msg.Payload.RepoName + ", was " + msg.Payload.Status + ". The build was kicked off by " + msg.Payload.CommitterName
+	text := "Build " + strconv.Itoa(msg.Payload.BuildNumber) + " on Repository: " + msg.Payload.RepoName + ", was " + msg.Payload.Status + ". The build was kicked off by " + msg.Payload.CommitterName
 	client, err := google.DefaultClient(ctx,
 		"https://www.googleapis.com/auth/chat.bot")
 	if err != nil {
