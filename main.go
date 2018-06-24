@@ -20,25 +20,26 @@ type CircleCIPayload struct {
 }
 
 type CircleCI struct {
-	VCSURL        string `json:"vcs_url"`
-	BuildURL      string `json:"build_url"`
-	BuildNumber   int    `json:"build_num"`
-	Branch        string `json:"branch"`
-	VCSRevision   string `json:"`
-	CommitterName string `json:"committer_name"`
-	CommiterEmail string `json:"committer_email"`
-	Subject       string `json:"subject"`
-	Body          string `json:"body"`
-	Why           string `json:"why"`
-	DontBuild     string `json:"dont_build"`
-	QueuedAt      string `json:"queue_at"`
-	StartTime     string `json:"start_time"`
-	StopTime      string `json:"stop_time"`
-	UserName      string `json:"username"`
-	RepoName      string `json:"reponame"`
-	Lifecycle     string `json:"lifecycle"`
-	Outcome       string `json:"outcome"`
-	Status        string `json:"status"`
+	VCSURL          string `json:"vcs_url"`
+	BuildURL        string `json:"build_url"`
+	BuildNumber     int    `json:"build_num"`
+	Branch          string `json:"branch"`
+	VCSRevision     string `json:"`
+	CommitterName   string `json:"committer_name"`
+	CommiterEmail   string `json:"committer_email"`
+	Subject         string `json:"subject"`
+	Body            string `json:"body"`
+	Why             string `json:"why"`
+	BuildTimeMillis string `json:"build_time_millis"`
+	DontBuild       string `json:"dont_build"`
+	QueuedAt        string `json:"queue_at"`
+	StartTime       string `json:"start_time"`
+	StopTime        string `json:"stop_time"`
+	UserName        string `json:"username"`
+	RepoName        string `json:"reponame"`
+	Lifecycle       string `json:"lifecycle"`
+	Outcome         string `json:"outcome"`
+	Status          string `json:"status"`
 }
 
 var err error
@@ -67,7 +68,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Infof(ctx, "Error :%v", err)
 	}
-	text := "Build " + strconv.Itoa(msg.Payload.BuildNumber) + " on Repository: " + msg.Payload.RepoName + ", was " + msg.Payload.Status + ". The build was kicked off by " + msg.Payload.CommitterName
+	text := "Build number " + strconv.Itoa(msg.Payload.BuildNumber) + " on Repository: " + msg.Payload.Branch + "/" + msg.Payload.RepoName + ", has completed with the status of: " + msg.Payload.Status + ". The build was kicked off by " + msg.Payload.CommitterName + ". The build took " + msg.Payload.BuildTimeMillis + " ms. More information is available here: " + msg.Payload.BuildURL
 	client, err := google.DefaultClient(ctx,
 		"https://www.googleapis.com/auth/chat.bot")
 	if err != nil {
