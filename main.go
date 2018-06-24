@@ -30,7 +30,7 @@ type CircleCI struct {
 	Subject         string `json:"subject"`
 	Body            string `json:"body"`
 	Why             string `json:"why"`
-	BuildTimeMillis string `json:"build_time_millis"`
+	BuildTimeMillis int    `json:"build_time_millis"`
 	DontBuild       string `json:"dont_build"`
 	QueuedAt        string `json:"queue_at"`
 	StartTime       string `json:"start_time"`
@@ -68,7 +68,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Infof(ctx, "Error :%v", err)
 	}
-	text := "Build number " + strconv.Itoa(msg.Payload.BuildNumber) + " on Repository: " + msg.Payload.Branch + "/" + msg.Payload.RepoName + ", has completed with the status of: " + msg.Payload.Status + ". The build was kicked off by " + msg.Payload.CommitterName + ". The build took " + msg.Payload.BuildTimeMillis + " ms. More information is available here: " + msg.Payload.BuildURL
+	text := "Build number " + strconv.Itoa(msg.Payload.BuildNumber) + " on Repository: " + msg.Payload.Branch + "/" + msg.Payload.RepoName + ", has completed with the status of: " + msg.Payload.Status + ". The build was kicked off by " + msg.Payload.CommitterName + ". The build took " + strconv.Itoa(msg.Payload.BuildTimeMillis/1000) + " seconds. More information is available here: " + msg.Payload.BuildURL
 	client, err := google.DefaultClient(ctx,
 		"https://www.googleapis.com/auth/chat.bot")
 	if err != nil {
