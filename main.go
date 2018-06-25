@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -42,6 +43,10 @@ type CircleCI struct {
 	Status          string `json:"status"`
 }
 
+type OverridePayload struct {
+	Text string `json:"text"`
+}
+
 var err error
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,9 +54,26 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	token, ok := r.URL.Query()["token"]
-
 	if !ok || token[0] != os.Getenv("TOKEN") {
 		log.Infof(ctx, "No Param Received")
+		return
+	}
+	override, _ := r.URL.Query()["override"]
+	if override[0] != "" {
+		d, err := ioutil.ReadAll(r.Body)
+		defer r.Body.Close()
+		if err != nil {
+			log.Infof(ctx, "Error Reading Body", err)
+			// json.NewEncoder(w).Encode(e)
+			return
+		}
+		var m OverridePayload
+		err = json.Unmarshal(d, &m)
+		if err != nil {
+			log.Infof(ctx, "Error :%v", err)
+		}
+		postToRoom(ctx, m.Text)
+		json.NewEncoder(w).Encode("Success")
 		return
 	}
 
@@ -69,6 +91,13 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		log.Infof(ctx, "Error :%v", err)
 	}
 	text := "Build number " + strconv.Itoa(msg.Payload.BuildNumber) + " on Repository: " + msg.Payload.Branch + "/" + msg.Payload.RepoName + ", has completed with the status of: " + msg.Payload.Status + ". The build was kicked off by " + msg.Payload.CommitterName + ". The build took " + strconv.Itoa(msg.Payload.BuildTimeMillis/1000) + " seconds. More information is available here: " + msg.Payload.BuildURL
+
+	postToRoom(ctx, text)
+	json.NewEncoder(w).Encode("Success")
+	return
+}
+
+func postToRoom(ctx context.Context, text string) {
 	client, err := google.DefaultClient(ctx,
 		"https://www.googleapis.com/auth/chat.bot")
 	if err != nil {
@@ -81,8 +110,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	client.Post("https://chat.googleapis.com/v1/spaces/AAAAV2Ons90/messages?threadKey=build", "application/json", bytes.NewBuffer(postBody))
-	json.NewEncoder(w).Encode("Success")
-	return
+
 }
 
 func main() {
